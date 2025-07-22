@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Accounts Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3e5f5;
+    }
+
+    header {
+      background-color: #6a1b9a;
+      color: white;
+      padding: 20px;
+      font-size: 22px;
+    }
+
+    .logout-btn {
+      float: right;
+      background-color: #ab47bc;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #9c27b0;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    h2 {
+      color: #4a148c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #ce93d8;
+      color: #4a148c;
+    }
+
+    tr:hover {
+      background-color: #f3e5f5;
+    }
+
+    .no-record {
+      color: #777;
+      font-style: italic;
+      margin-top: 20px;
+    }
+
+    .actions {
+      margin-bottom: 20px;
+    }
+
+    select, button {
+      padding: 8px 12px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .download-btn {
+      background-color: #4a148c;
+      color: white;
+    }
+
+    .download-btn:hover {
+      background-color: #6a1b9a;
+    }
+
+    .section-divider {
+      margin: 40px 0 20px;
+      font-size: 20px;
+      color: #4a148c;
+      border-bottom: 2px solid #ce93d8;
+      padding-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  Welcome, Accounts
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+  <h2>Approved Leave Records</h2>
+  <div class="actions">
+    <label>Filter by Type:</label>
+    <select id="typeFilter" onchange="loadApprovedLeaves()">
+      <option value="All">All</option>
+      <option value="CL">CL</option>
+      <option value="OD">OD</option>
+      <option value="Sick">Sick</option>
+      <option value="CCL">CCL</option>
+    </select>
+    <button class="download-btn" onclick="downloadPDF()">Download as PDF</button>
+  </div>
+  <div id="leaveTable"></div>
+
+  <div class="section-divider">Reset Faculty Passwords</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Faculty Name</th>
+        <th>Email</th>
+        <th>Reset Password</th>
+      </tr>
+    </thead>
+    <tbody id="facultyTableBody">
+      <!-- Faculty list will be populated here -->
+    </tbody>
+  </table>
+</div>
+
+<!-- jsPDF and AutoTable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+  function logout() {
+    sessionStorage.removeItem("loggedInAccounts");
+    window.location.href = "accounts-login.html";
+  }
+
+  function loadApprovedLeaves() {
+    const data = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+    const selectedType = document.getElementById("typeFilter").value;
+    const approvedLeaves = data.filter(app =>
+      app.hodStatus === "Forwarded" &&
+      app.principalStatus === "Approved" &&
+      (selectedType === "All" || app.leaveType === selectedType)
+    );
+
+    if (approvedLeaves.length === 0) {
+      document.getElementById("leaveTable").innerHTML = "<p class='no-record'>No approved leaves found.</p>";
+      return;
+    }
+
+    let table = `
+      <table id="exportTable">
+        <tr>
+          <th>Faculty Email</th>
+          <th>Date</th>
+          <th>type</th>
+          <th>Reason</th>
+          <th>HOD Status</th>
+          <th>Principal Status</th>
+        </tr>
+    `;
+
+    approvedLeaves.forEach(app => {
+      table += `
+        <tr>
+          <td>${app.email}</td>
+          <td>${app.date}</td>
+          <td>${app.type}</td>
+          <td>${app.reason}</td>
+          <td>${app.hodStatus}</td>
+          <td>${app.principalStatus}</td>
+        </tr>
+      `;
+    });
+
+    table += `</table>`;
+    document.getElementById("leaveTable").innerHTML = table;
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const table = document.getElementById("exportTable");
+
+    if (!table) {
+      alert("No data available to download.");
+      return;
+    }
+
+    let textY = 20;
+    doc.setFontSize(14);
+    doc.text("Approved Leave Records", 15, textY);
+    textY += 10;
+
+    const headers = [...table.rows[0].cells].map(cell => cell.innerText);
+    const rows = [...table.rows].slice(1).map(row =>
+      [...row.cells].map(cell => cell.innerText)
+    );
+
+    doc.autoTable({
+      startY: textY,
+      head: [headers],
+      body: rows,
+      styles: { fontSize: 10 }
+    });
+
+    doc.save("Approved_Leaves.pdf");
+  }
+
+  function loadFacultyTable() {
+    const facultyUsers = JSON.parse(localStorage.getItem("facultyUsers")) || [];
+    const tableBody = document.getElementById("facultyTableBody");
+    tableBody.innerHTML = "";
+
+    facultyUsers.forEach((user, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${user.name || "No Name"}</td>
+        <td>${user.email}</td>
+        <td><button onclick="resetPassword(${index})">Reset</button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  function resetPassword(index) {
+    const facultyUsers = JSON.parse(localStorage.getItem("facultyUsers")) || [];
+    const user = facultyUsers[index];
+    const newPassword = prompt(`Enter new password for ${user.email}:`);
+
+    if (!newPassword) {
+      alert("Password not updated. Please enter a valid password.");
+      return;
+    }
+
+    facultyUsers[index].password = newPassword;
+    localStorage.setItem("facultyUsers", JSON.stringify(facultyUsers));
+    alert(`Password for ${user.email} has been updated.`);
+  }
+
+  window.onload = function () {
+    loadApprovedLeaves();
+    loadFacultyTable();
+  };
+</script>
+
+</body>
+</html>

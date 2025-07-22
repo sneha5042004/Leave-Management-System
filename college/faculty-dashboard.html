@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Faculty Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e3f2fd;
+    }
+
+    header {
+      background-color: #0d47a1;
+      color: white;
+      padding: 20px;
+      text-align: left;
+      font-size: 22px;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100vh - 80px);
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #1565c0;
+      padding: 20px;
+      color: white;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 30px;
+    }
+
+    .sidebar button {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 12px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.3s;
+    }
+
+    .sidebar button:hover {
+      background-color: #42a5f5;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 30px;
+      background-color: #f1f8ff;
+    }
+
+    .logout-btn {
+      float: right;
+      margin-top: -40px;
+      margin-right: 20px;
+      background-color: #f44336;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Welcome, <span id="facultyName">Faculty</span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+
+  <div class="container">
+    <div class="sidebar">
+      <h3>Menu</h3>
+      <button onclick="showSection('apply')">Apply for Leave</button>
+      <button onclick="showSection('status')">View Status</button>
+      <button onclick="showSection('summary')">Total Leaves Taken</button>
+    </div>
+
+    <div class="content" id="dashboardContent">
+      <h2>Dashboard Overview</h2>
+      <p>Select an option from the menu to get started.</p>
+    </div>
+  </div>
+<script>
+  const email = sessionStorage.getItem("loggedInFaculty");
+  if (email) {
+    document.getElementById("facultyName").textContent = email.split('@')[0];
+  }
+
+  function logout() {
+    sessionStorage.removeItem("loggedInFaculty");
+    window.location.href = "faculty-login.html";
+  }
+
+  function showSection(section) {
+    const content = document.getElementById("dashboardContent");
+
+    if (section === 'apply') {
+      content.innerHTML = `
+        <h2>Apply for Leave</h2>
+        <form id="leaveForm">
+          <label>Date:</label><br>
+          <input type="date" id="leaveDate" required /><br><br>
+
+          <label>Leave Type:</label><br>
+          <select id="leaveType">
+            <option value="Sick">Sick</option>
+            <option value="CL">CL</option>
+            <option value="CCL">CCL</option>
+            <option value="OD">OD</option>
+          </select><br><br>
+
+          <label>Reason:</label><br>
+          <textarea id="leaveReason" rows="4" cols="50" required></textarea><br><br>
+
+          <button type="submit">Submit Application</button>
+        </form>
+        <p id="successMsg" style="color: green; font-weight: bold;"></p>
+      `;
+
+      document.getElementById("leaveForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const leaveDate = document.getElementById("leaveDate").value;
+        const leaveType = document.getElementById("leaveType").value;
+        const leaveReason = document.getElementById("leaveReason").value;
+
+        const facultyName = email.split('@')[0];
+
+        const newLeave = {
+          name: facultyName,
+          email: email,
+          date: leaveDate,
+          type: leaveType,
+          reason: leaveReason,
+          hodStatus: "Pending",
+          principalStatus: "Pending"
+        };
+
+        let leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+        leaveApplications.push(newLeave);
+        localStorage.setItem("leaveApplications", JSON.stringify(leaveApplications));
+
+        document.getElementById("successMsg").innerText = "Leave application submitted successfully!";
+        document.getElementById("leaveForm").reset();
+      });
+
+    } else if (section === 'status') {
+      let leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+      const facultyLeaves = leaveApplications.filter(app => app.email === email);
+
+      let html = "<h2>Leave Status</h2>";
+      if (facultyLeaves.length === 0) {
+        html += "<p>No applications found.</p>";
+      } else {
+        html += `<table border="1" cellpadding="10">
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>HOD Status</th>
+                    <th>Principal Status</th>
+                  </tr>`;
+        facultyLeaves.forEach(app => {
+          html += `
+            <tr>
+              <td>${app.date}</td>
+              <td>${app.type}</td>
+              <td>${app.reason}</td>
+              <td>${app.hodStatus}</td>
+              <td>${app.principalStatus}</td>
+            </tr>`;
+        });
+        html += "</table>";
+      }
+      content.innerHTML = html;
+
+    } else if (section === 'summary') {
+      let leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+      const facultyLeaves = leaveApplications.filter(app => app.email === email && app.principalStatus === "Approved");
+
+      const total = facultyLeaves.length;
+
+      content.innerHTML = `
+        <h2>Total Leaves Taken</h2>
+        <p>You have taken <strong>${total}</strong> leave(s) approved by the Principal.</p>
+      `;
+    }
+  }
+</script>
+
+  
+</body>
+</html> 

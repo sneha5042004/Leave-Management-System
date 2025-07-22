@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Principal Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e8f0fe;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #0d47a1;
+      color: white;
+      padding: 20px;
+      font-size: 22px;
+      text-align: left;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background: #1565c0;
+      color: white;
+    }
+
+    button {
+      padding: 6px 12px;
+      margin: 2px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .approve {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .reject {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .hold {
+      background-color: #ff9800;
+      color: white;
+    }
+
+    .logout {
+      float: right;
+      background-color: #d32f2f;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  Principal Dashboard
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+  <h2>Leave Applications (Forwarded by HOD)</h2>
+  <table id="leaveTable">
+    <thead>
+      <tr>
+        <th>Faculty</th>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Reason</th>
+        <th>HOD Status</th>
+        <th>Principal Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Applications will be inserted here -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function loadApplications() {
+    const tableBody = document.querySelector("#leaveTable tbody");
+    const applications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+
+    tableBody.innerHTML = "";
+
+    applications.forEach((app, index) => {
+      if (app.hodStatus === "Forwarded") {
+        const row = document.createElement("tr");
+        let actionButtons = "";
+
+        if (["Approved", "Rejected", "Hold"].includes(app.principalStatus)) {
+          actionButtons = `<strong>${app.principalStatus}</strong>`;
+        } else {
+          actionButtons = `
+            <button class="approve" onclick="updateStatus(${index}, 'Approved')">Approve</button>
+            <button class="reject" onclick="updateStatus(${index}, 'Rejected')">Reject</button>
+            <button class="hold" onclick="updateStatus(${index}, 'Hold')">Hold</button>
+          `;
+        }
+
+        row.innerHTML = `
+          <td>${app.email}</td>
+          <td>${app.date}</td>
+          <td>${app.type}</td>
+          <td>${app.reason}</td>
+          <td>${app.hodStatus}</td>
+          <td>${actionButtons}</td>
+        `;
+        tableBody.appendChild(row);
+      }
+    });
+  }
+
+  function updateStatus(index, status) {
+    const applications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+    applications[index].principalStatus = status;
+    localStorage.setItem("leaveApplications", JSON.stringify(applications));
+    loadApplications();
+  }
+
+  function logout() {
+    sessionStorage.removeItem("loggedInPrincipal");
+    window.location.href = "principal-login.html";
+  }
+
+  window.onload = loadApplications;
+</script>
+
+</body>
+</html>
