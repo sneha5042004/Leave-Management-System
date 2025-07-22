@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leave Application - Faculty Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #bbdefb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 500px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .msg {
+      text-align: center;
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Faculty Leave Application</h2>
+  <form id="leaveForm">
+    <label>Name</label>
+    <input type="text" id="name" readonly>
+
+    <label>Department</label>
+    <input type="text" id="department" readonly>
+
+    <label>Email</label>
+    <input type="email" id="email" readonly>
+
+    <label>Leave Type</label>
+    <select id="leaveType" required>
+      <option value="">Select Type</option>
+      <option value="Casual">Casual Leave</option>
+      <option value="Sick">Sick Leave</option>
+      <option value="Emergency">Emergency Leave</option>
+    </select>
+
+    <label>Leave Date</label>
+    <input type="date" id="leaveDate" required>
+
+    <label>Reason</label>
+    <textarea id="reason" rows="3" placeholder="Enter reason..." required></textarea>
+
+    <button type="submit">Submit Leave Request</button>
+    <div class="msg" id="successMsg"></div>
+  </form>
+</div>
+
+<script>
+  // Get logged-in faculty from localStorage (for demo purposes)
+  const users = JSON.parse(localStorage.getItem("facultyUsers")) || [];
+  const currentEmail = sessionStorage.getItem("loggedInFaculty"); // Set in login script
+  const user = users.find(u => u.email === currentEmail);
+
+  if (user) {
+    document.getElementById("name").value = user.name;
+    document.getElementById("department").value = user.department;
+    document.getElementById("email").value = user.email;
+  } else {
+    alert("Not logged in. Redirecting to login page...");
+    window.location.href = "faculty-login.html";
+  }
+
+  document.getElementById("leaveForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const leaveData = {
+      name: user.name,
+      email: user.email,
+      department: user.department,
+      leaveType: document.getElementById("leaveType").value,
+      leaveDate: document.getElementById("leaveDate").value,
+      reason: document.getElementById("reason").value,
+      status: "Pending HOD Approval"
+    };
+
+    let leaves = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+    leaves.push(leaveData);
+    localStorage.setItem("leaveRequests", JSON.stringify(leaves));
+
+    document.getElementById("successMsg").textContent = "Leave application submitted!";
+    document.getElementById("leaveForm").reset();
+
+    // refill readonly fields
+    document.getElementById("name").value = user.name;
+    document.getElementById("department").value = user.department;
+    document.getElementById("email").value = user.email;
+  });
+</script>
+
+</body>
+</html>

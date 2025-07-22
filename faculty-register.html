@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Faculty Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #90caf9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1976d2;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .msg {
+      text-align: center;
+      margin-top: 10px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Registration</h2>
+  <form id="registerForm">
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="tel" id="phone" placeholder="Phone Number" required pattern="[0-9]{10}">
+    <input type="text" id="department" placeholder="Department" required>
+    <input type="password" id="password" placeholder="Create Password" required>
+
+    <!-- ✅ Role Selection Dropdown -->
+    <select id="role" required>
+      <option value="">-- Select Role --</option>
+      <option value="faculty-login.html">Faculty</option>
+      <option value="hod.html">HOD</option>
+      <option value="principal-login.html">Principal</option>
+      <option value="accounts.html">Accounts</option>
+    </select>
+
+    <button type="submit">Register</button>
+    <div class="msg" id="regMsg"></div>
+  </form>
+</div>
+
+<script>
+  document.getElementById("registerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const department = document.getElementById("department").value.trim();
+    const password = document.getElementById("password").value;
+    const rolePage = document.getElementById("role").value;
+
+    const msgDiv = document.getElementById("regMsg");
+
+    if (!rolePage) {
+      msgDiv.style.color = "red";
+      msgDiv.textContent = "Please select a login role!";
+      return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("facultyUsers")) || [];
+
+    const alreadyExists = users.find(user => user.email === email);
+
+    if (alreadyExists) {
+      msgDiv.style.color = "red";
+      msgDiv.textContent = "User already registered!";
+    } else {
+      users.push({ name, email, phone, department, password, role: rolePage });
+      localStorage.setItem("facultyUsers", JSON.stringify(users));
+      msgDiv.style.color = "green";
+      msgDiv.textContent = "Registration successful! Redirecting to login...";
+
+      document.getElementById("registerForm").reset();
+
+      // ✅ Redirect to selected role's login page
+      setTimeout(() => {
+        window.location.href = rolePage;
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>

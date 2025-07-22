@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HOD Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #90caf9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1976d2;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .msg {
+      text-align: center;
+      margin-top: 10px;
+      color: red;
+    }
+
+    .register-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .register-link a {
+      text-decoration: none;
+      color: #1976d2;
+      font-weight: bold;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>HOD Login</h2>
+  <form id="hodLoginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+    <div class="msg" id="loginMsg"></div>
+  </form>
+  <div class="register-link">
+    Not registered? <a href="faculty-register.html">Register here</a>
+  </div>
+</div>
+
+<script>
+  // Auto-add default HOD if not already present
+  function registerDefaultHOD() {
+    let users = JSON.parse(localStorage.getItem("facultyUsers")) || [];
+    const hodExists = users.some(u => u.email === "hodsvit@gmail.com" && u.role === "hod");
+    if (!hodExists) {
+      users.push({
+        email: "hodsvit@gmail.com",
+        password: "123456789",
+        role: "hod"
+      });
+      localStorage.setItem("facultyUsers", JSON.stringify(users));
+    }
+  }
+
+  registerDefaultHOD();
+
+  document.getElementById("hodLoginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const loginMsg = document.getElementById("loginMsg");
+
+    const users = JSON.parse(localStorage.getItem("facultyUsers")) || [];
+
+    const user = users.find(u => u.email === email && u.password === password && u.role === "hod");
+
+    if (user) {
+      loginMsg.style.color = "green";
+      loginMsg.textContent = "Login successful! Redirecting...";
+      setTimeout(() => {
+        window.location.href = "hod-dashboard.html";
+      }, 1500);
+    } else {
+      loginMsg.textContent = "Invalid credentials or not registered as HOD.";
+    }
+  });
+</script>
+
+</body>
+</html>
