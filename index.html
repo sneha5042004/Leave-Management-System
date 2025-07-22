@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Leave Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --light-bg: rgba(255, 255, 255, 0.12);
+      --dark-bg: rgba(0, 0, 0, 0.4);
+      --text-color: #fff;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)),
+                  url('https://images.unsplash.com/photo-1573164574396-9d7cd9b1d3d4?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text-color);
+      transition: background 0.3s ease;
+    }
+
+    .container {
+      background: var(--light-bg);
+      backdrop-filter: blur(18px);
+      padding: 40px 30px;
+      border-radius: 25px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      width: 90%;
+      max-width: 480px;
+      text-align: center;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .datetime, .quote {
+      font-size: 14px;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .role-btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 15px;
+      background: linear-gradient(to right, #64b5f6, #1976d2);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+    }
+
+    .role-btn:hover {
+      background: linear-gradient(to right, #2196f3, #0d47a1);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .toggle-mode {
+      margin-top: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #dcdcdc;
+    }
+
+    .toggle-mode:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 24px; }
+      .role-btn { font-size: 14px; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+  <img src="https://cdn-icons-png.flaticon.com/512/219/219969.png" alt="logo" class="logo">
+  <h1>Leave Management System</h1>
+  <div class="datetime" id="datetime"></div>
+  <div class="quote">“Discipline is the bridge between goals and accomplishment.”</div>
+
+  <div class="card">
+    <button class="role-btn" onclick="location.href='faculty-login.html'">
+      <i class="fas fa-user-graduate"></i> Faculty Login
+    </button>
+    <button class="role-btn" onclick="location.href='hod.html'">
+      <i class="fas fa-chalkboard-teacher"></i> HOD Login
+    </button>
+    <button class="role-btn" onclick="location.href='principal-login.html'">
+      <i class="fas fa-user-tie"></i> Principal Login
+    </button>
+    <button class="role-btn" onclick="location.href='accounts.html'">
+      <i class="fas fa-file-invoice-dollar"></i> Accounts Login
+    </button>
+  </div>
+
+  <div class="toggle-mode" onclick="toggleTheme()">Toggle Light/Dark Mode</div>
+</div>
+
+<script>
+  function updateDateTime() {
+    const now = new Date();
+    const dateTimeString = now.toLocaleString();
+    document.getElementById("datetime").textContent = dateTimeString;
+  }
+
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
+
+  let darkMode = false;
+  function toggleTheme() {
+    const root = document.documentElement;
+    const container = document.getElementById('mainContainer');
+    darkMode = !darkMode;
+
+    if (darkMode) {
+      root.style.setProperty('--light-bg', 'rgba(0, 0, 0, 0.5)');
+      root.style.setProperty('--text-color', '#f0f0f0');
+    } else {
+      root.style.setProperty('--light-bg', 'rgba(255, 255, 255, 0.12)');
+      root.style.setProperty('--text-color', '#fff');
+    }
+  }
+</script>
+
+</body>
+</html>
